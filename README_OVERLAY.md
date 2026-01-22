@@ -22,7 +22,8 @@
 
 **Ekranın üst ortasında her zaman görünür - Hiçbir pencereyi kaplamaz!**
 
-<img width="2559" height="732" alt="image" src="https://github.com/user-attachments/assets/f5cbb164-8fcb-47fb-be1d-695aa8f71f16" />
+<img width="2559" height="595" alt="image" src="https://github.com/user-attachments/assets/05f674f9-1bf7-49e9-a4db-249a96ef1aee" />
+
 
 
 ---
