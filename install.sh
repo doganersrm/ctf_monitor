@@ -32,10 +32,26 @@ EOF
 
 check_root() {
     if [ "$EUID" -eq 0 ]; then
-        echo -e "${RED}✗ Root olarak çalıştırmayın!${NC}"
-        echo -e "${YELLOW}Normal kullanıcı olarak çalıştırın:${NC}"
-        echo -e "${CYAN}curl -sSL URL | bash${NC}"
-        exit 1
+        echo -e "${YELLOW}⚠ Root olarak çalıştırıyorsunuz!${NC}"
+        echo -e "${YELLOW}Not: Overlay normal kullanıcı ile daha iyi çalışır.${NC}"
+        echo ""
+        
+        # Root ise normal kullanıcı olarak devam etmek ister misin?
+        if [ -n "$SUDO_USER" ]; then
+            echo -e "${CYAN}Normal kullanıcı ($SUDO_USER) olarak devam etmek ister misiniz? (Y/n)${NC}"
+            read -r response
+            if [[ ! "$response" =~ ^[Nn]$ ]]; then
+                echo -e "${GREEN}→ $SUDO_USER kullanıcısı olarak yeniden başlatılıyor...${NC}"
+                exec su - "$SUDO_USER" -c "bash <(cat << 'EOFINSTALL'
+$(cat "$0")
+EOFINSTALL
+)"
+            fi
+        fi
+        
+        echo -e "${YELLOW}Root olarak devam ediliyor...${NC}"
+        echo ""
+        sleep 2
     fi
 }
 
@@ -478,7 +494,8 @@ class CTFVPNOverlay:
 
 def main():
     if os.geteuid() == 0:
-        print("⚠ Root olarak çalıştırmayın!")
+        print("⚠ Root olarak çalışıyorsunuz!")
+        print("  Not: Overlay root olarak da çalışır ama bazı özellikler kısıtlı olabilir.")
     
     overlay = CTFVPNOverlay()
     
