@@ -5,13 +5,13 @@ Ekranın üstünde her zaman görünen, VPN ve hedef IP bilgilerinizi gösteren 
 ## ⚡ Tek Komutla Kurulum
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/YOUR_USERNAME/ctf-vpn-monitor/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/doganersrm/ctf_monitor/main/install.sh | bash
 ```
 
 Veya manuel:
 
 ```bash
-wget https://raw.githubusercontent.com/YOUR_USERNAME/ctf-vpn-monitor/main/install.sh
+wget https://raw.githubusercontent.com/doganersrm/ctf_monitor/main/install.sh
 chmod +x install.sh
 ./install.sh
 ```
@@ -100,7 +100,7 @@ ctfmon status
 
 ```bash
 # 1. Kurulum
-curl -sSL URL | bash
+curl -sSL https://raw.githubusercontent.com/doganersrm/ctf_monitor/main/install.sh | bash
 source ~/.bashrc
 
 # 2. Overlay başlat
