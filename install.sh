@@ -1,6 +1,6 @@
 #!/bin/bash
 # CTF VPN Monitor - One-Click Installer
-# Kullanım: curl -sSL https://raw.githubusercontent.com/username/repo/main/install.sh | bash
+# Kullanım: curl -sSL https://raw.githubusercontent.com/doganersrm/ctf_monitor/main/install.sh | bash
 
 set -e
 
@@ -593,7 +593,7 @@ case "$1" in
         ;;
     update)
         echo -e "${CYAN}🔄 Güncelleme kontrol ediliyor...${NC}"
-        curl -sSL https://raw.githubusercontent.com/username/repo/main/install.sh | bash
+        curl -sSL https://raw.githubusercontent.com/doganersrm/ctf_monitor/main/install.sh | bash
         ;;
     uninstall)
         echo -e "${YELLOW}🗑️  Kaldırılıyor...${NC}"
