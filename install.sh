@@ -17,7 +17,7 @@ BIN_DIR="$HOME/.local/bin"
 CONFIG_FILE="$HOME/.ctf_vpn_config.json"
 
 banner() {
-    clear
+    if [ -t 1 ]; then clear; fi
     echo -e "${CYAN}"
     cat << "EOF"
 ╔════════════════════════════════════════════════════╗
@@ -32,26 +32,8 @@ EOF
 
 check_root() {
     if [ "$EUID" -eq 0 ]; then
-        echo -e "${YELLOW}⚠ Root olarak çalıştırıyorsunuz!${NC}"
-        echo -e "${YELLOW}Not: Overlay normal kullanıcı ile daha iyi çalışır.${NC}"
-        echo ""
-        
-        # Root ise normal kullanıcı olarak devam etmek ister misin?
-        if [ -n "$SUDO_USER" ]; then
-            echo -e "${CYAN}Normal kullanıcı ($SUDO_USER) olarak devam etmek ister misiniz? (Y/n)${NC}"
-            read -r response
-            if [[ ! "$response" =~ ^[Nn]$ ]]; then
-                echo -e "${GREEN}→ $SUDO_USER kullanıcısı olarak yeniden başlatılıyor...${NC}"
-                exec su - "$SUDO_USER" -c "bash <(cat << 'EOFINSTALL'
-$(cat "$0")
-EOFINSTALL
-)"
-            fi
-        fi
-        
-        echo -e "${YELLOW}Root olarak devam ediliyor...${NC}"
-        echo ""
-        sleep 2
+        echo -e "${RED}Kurulumu masaüstü oturumunu açan normal kullanıcıyla çalıştırın (sudo kullanmayın).${NC}" >&2
+        exit 1
     fi
 }
 
@@ -68,9 +50,10 @@ check_dependencies() {
         echo -e "${GREEN}✓ Python3 kurulu${NC}"
     fi
     
-    if ! python3 -c "import gi" 2>/dev/null; then
+    if ! python3 -c "import gi; gi.require_version('Gtk', '3.0'); from gi.repository import Gtk" 2>/dev/null; then
         echo -e "${RED}✗ python3-gi bulunamadı${NC}"
         packages_to_install+=("python3-gi")
+        packages_to_install+=("gir1.2-gtk-3.0")
     else
         echo -e "${GREEN}✓ python3-gi kurulu${NC}"
     fi
@@ -92,11 +75,16 @@ check_dependencies() {
     echo ""
     
     if [ ${#packages_to_install[@]} -gt 0 ]; then
+        if ! command -v apt-get >/dev/null; then
+            echo -e "${RED}Eksik paketlerin otomatik kurulumu için apt-get gerekli (Debian/Ubuntu/Kali).${NC}" >&2
+            exit 1
+        fi
         echo -e "${YELLOW}⚠ Eksik paketler: ${packages_to_install[*]}${NC}"
         echo ""
         echo -e "${CYAN}Kurmak için sudo yetkisi gerekiyor...${NC}"
         sudo apt-get update
         sudo apt-get install -y "${packages_to_install[@]}"
+        python3 -c "import gi; gi.require_version('Gtk', '3.0'); from gi.repository import Gtk" || { echo 'GTK3 Python modülü yüklenemedi.' >&2; exit 1; }
         echo ""
         echo -e "${GREEN}✓ Paketler kuruldu!${NC}"
     else
@@ -558,12 +546,13 @@ case "$1" in
             exit 0
         fi
         echo -e "${GREEN}▶ CTF VPN Overlay başlatılıyor...${NC}"
-        nohup python3 "$OVERLAY_SCRIPT" > /tmp/ctf_vpn_monitor.log 2>&1 &
+        nohup /usr/bin/python3 "$OVERLAY_SCRIPT" > "$INSTALL_DIR/ctf_vpn_monitor.log" 2>&1 &
         sleep 2
         if pgrep -f "ctf_vpn_overlay.py" > /dev/null; then
             echo -e "${GREEN}✓ Overlay başlatıldı!${NC}"
         else
-            echo -e "${RED}✗ Başlatılamadı! Log: cat /tmp/ctf_vpn_monitor.log${NC}"
+            echo -e "${RED}✗ Başlatılamadı! Log: $INSTALL_DIR/ctf_vpn_monitor.log${NC}"
+            exit 1
         fi
         ;;
     stop)
@@ -617,6 +606,7 @@ case "$1" in
         $0 stop 2>/dev/null
         rm -rf "$INSTALL_DIR"
         rm -f "$BIN_DIR/ctfmon"
+        rm -f "$HOME/.config/autostart/ctf-vpn-monitor.desktop"
         rm -f "$CONFIG_FILE"
         echo -e "${GREEN}✓ Kaldırıldı${NC}"
         ;;
@@ -668,6 +658,29 @@ create_version_file() {
     echo "1.0.0" > "$INSTALL_DIR/VERSION"
 }
 
+setup_autostart() {
+    local desktop_dir="$HOME/.config/autostart"
+    mkdir -p "$desktop_dir"
+    cat > "$desktop_dir/ctf-vpn-monitor.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=CTF VPN Monitor
+Comment=VPN and target IP overlay
+Exec=$BIN_DIR/ctfmon start
+Terminal=false
+X-GNOME-Autostart-enabled=true
+EOF
+    echo -e "${GREEN}✓ Oturum açılışında otomatik başlatma ayarlandı${NC}"
+}
+
+start_if_graphical() {
+    if [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]; then
+        "$BIN_DIR/ctfmon" restart
+    else
+        echo -e "${YELLOW}Grafik oturum bulunamadı; overlay sonraki masaüstü oturumunda başlayacak.${NC}"
+    fi
+}
+
 finish() {
     echo -e "${GREEN}"
     cat << "EOF"
@@ -707,6 +720,8 @@ main() {
     install_cli_wrapper
     setup_path
     create_version_file
+    setup_autostart
+    start_if_graphical
     finish
 }
 
