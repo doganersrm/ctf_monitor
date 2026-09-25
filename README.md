@@ -164,3 +164,4 @@ CTF için geliştirildi. Hack The Box, TryHackMe ve benzeri platformlar için id
 ---
 
 **Not**: Root olarak çalıştırmayın! Normal kullanıcı yeterlidir.
+
