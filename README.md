@@ -8,6 +8,8 @@ Ekranın üstünde her zaman görünen, VPN ve hedef IP bilgilerinizi gösteren 
 curl -sSL https://raw.githubusercontent.com/doganersrm/ctf_monitor/main/install.sh | bash
 ```
 
+Debian, Ubuntu veya Kali masaüstünde normal kullanıcı olarak çalıştırın; eksik paketler için `sudo` yetkisi gerekir. Kurulum, masaüstü oturumu açıksa overlay'i başlatır ve sonraki oturumlarda otomatik açılmasını ayarlar. SSH gibi grafik oturumu olmayan ortamlarda ilk masaüstü girişinde açılır. Komut bulunamazsa yeni terminal açın veya `~/.local/bin/ctfmon` kullanın.
+
 Veya manuel:
 
 ```bash
@@ -80,7 +82,7 @@ Otomatik kurulur:
 
 ```bash
 # Log kontrol
-cat /tmp/ctf_vpn_monitor.log
+cat ~/.ctf-vpn-monitor/ctf_vpn_monitor.log
 
 # Yeniden başlat
 ctfmon restart
@@ -94,7 +96,7 @@ ctfmon status
 - Program: `~/.ctf-vpn-monitor/`
 - Config: `~/.ctf_vpn_config.json`
 - Binary: `~/.local/bin/ctfmon`
-- Log: `/tmp/ctf_vpn_monitor.log`
+- Log: `~/.ctf-vpn-monitor/ctf_vpn_monitor.log`
 
 ## 🎯 Örnek Workflow
 
@@ -145,19 +147,7 @@ ctfmon uninstall
 
 ## 📱 Sistem Başlangıcında Çalıştırma
 
-```bash
-mkdir -p ~/.config/autostart
-
-cat > ~/.config/autostart/ctf-vpn-monitor.desktop << 'EOF'
-[Desktop Entry]
-Type=Application
-Name=CTF VPN Monitor
-Exec=/home/YOUR_USERNAME/.local/bin/ctfmon start
-Hidden=false
-NoDisplay=false
-X-GNOME-Autostart-enabled=true
-EOF
-```
+Kurulum `~/.config/autostart/ctf-vpn-monitor.desktop` dosyasını otomatik oluşturur. `ctfmon uninstall` dosyayı kaldırır.
 
 ## 🤝 Katkıda Bulunma
 
