@@ -32,8 +32,10 @@ EOF
 
 check_root() {
     if [ "$EUID" -eq 0 ]; then
-        echo -e "${RED}Kurulumu masaüstü oturumunu açan normal kullanıcıyla çalıştırın (sudo kullanmayın).${NC}" >&2
-        exit 1
+        echo -e "${YELLOW}⚠ Root kullanıcı olarak kurulum yapılıyor.${NC}"
+        echo -e "${YELLOW}  Kurulum dizini: $HOME/.ctf-vpn-monitor${NC}"
+        echo -e "${YELLOW}  Komut dizini:   $HOME/.local/bin${NC}"
+        echo ""
     fi
 }
 
@@ -81,9 +83,15 @@ check_dependencies() {
         fi
         echo -e "${YELLOW}⚠ Eksik paketler: ${packages_to_install[*]}${NC}"
         echo ""
-        echo -e "${CYAN}Kurmak için sudo yetkisi gerekiyor...${NC}"
-        sudo apt-get update
-        sudo apt-get install -y "${packages_to_install[@]}"
+        if [ "$EUID" -eq 0 ]; then
+            echo -e "${CYAN}Root yetkisiyle eksik paketler kuruluyor...${NC}"
+            apt-get update
+            apt-get install -y "${packages_to_install[@]}"
+        else
+            echo -e "${CYAN}Kurmak için sudo yetkisi gerekiyor...${NC}"
+            sudo apt-get update
+            sudo apt-get install -y "${packages_to_install[@]}"
+        fi
         python3 -c "import gi; gi.require_version('Gtk', '3.0'); from gi.repository import Gtk" || { echo 'GTK3 Python modülü yüklenemedi.' >&2; exit 1; }
         echo ""
         echo -e "${GREEN}✓ Paketler kuruldu!${NC}"
