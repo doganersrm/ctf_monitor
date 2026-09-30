@@ -55,13 +55,13 @@ Ekranın üst ortasında:
 - ✅ **Her zaman üstte** - Diğer pencerelerin üzerinde
 - ✅ **Şeffaf arka plan** - Görüşü engellemez
 - ✅ **Otomatik güncelleme** - 5 saniyede bir
-- ✅ **Tek tıkla kopyalama** - Sağ tık menüsü
+- ✅ **Tek tıkla kopyalama** - VPN, Local veya Target IP alanına sol tıklayın; sağ tık menüsü de kullanılabilir
 - ✅ **Kolay kurulum** - Tek komut
 - ✅ **Kolay güncelleme** - `ctfmon update`
 
 ## 🖱️ Fare İşlemleri
 
-- **Sol Tık**: Bildirim göster
+- **Sol Tık**: VPN, Local veya Target alanındaki mevcut IP'yi panoya kopyala
 - **Sağ Tık**: Menü
   - 📋 IP'leri kopyala
   - ⚙️ Hedef IP ayarla
@@ -116,7 +116,7 @@ ctfmon target -u 10.10.11.202
 
 # 5. Çalış!
 # IP'ler ekranın üstünde görünüyor
-# Sol tık: bildirim
+# Sol tık: tıklanan IP'yi kopyala
 # Sağ tık: IP kopyala
 ```
 
