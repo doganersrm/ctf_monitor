@@ -217,7 +217,7 @@ class CTFVPNOverlay:
         
         print("✓ CTF VPN Overlay başlatıldı!")
         print("  Ekranın üst ortasında görmelisiniz")
-        print("  Sağ tık: Menü | Sol tık: Bildirim")
+        print("  Sağ tık: Menü | IP üzerinde sol tık: Kopyala")
     
     def position_window(self):
         self.window.realize()
@@ -294,8 +294,22 @@ class CTFVPNOverlay:
         if event.button == 3:
             self.menu.popup(None, None, None, None, event.button, event.time)
             return True
-        elif event.button == 1:
-            self.show_status_notification()
+        if event.button == 1:
+            # Etiketlerin gerçek konumlarını kullan; pencere yeniden boyutlansa da
+            # tıklanan VPN, Local veya Target alanı doğru eşleşsin.
+            for ip_type, label in (
+                ('vpn', self.vpn_label),
+                ('local', self.local_label),
+                ('target', self.target_label),
+            ):
+                position = label.translate_coordinates(widget, 0, 0)
+                if position is None:
+                    continue
+                x, y = position
+                if (x <= event.x < x + label.get_allocated_width()
+                        and y <= event.y < y + label.get_allocated_height()):
+                    self.copy_to_clipboard(ip_type)
+                    return True
             return True
         return False
     
@@ -331,15 +345,23 @@ class CTFVPNOverlay:
         elif ip_type == 'target':
             ip = self.target_ip
         
-        if ip:
+        if not ip:
+            return
+
+        try:
+            clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+            clipboard.set_text(ip, -1)
+            clipboard.store()
+            print(f"✓ {ip} panoya kopyalandı")
             try:
-                subprocess.run(['xclip', '-selection', 'clipboard'], 
-                             input=ip.encode(), timeout=2)
-                subprocess.run(['notify-send', '-t', '2000', 'Kopyalandı', f'{ip_type.upper()}: {ip}'],
-                             timeout=2, stderr=subprocess.DEVNULL)
-                print(f"✓ {ip} panoya kopyalandı")
-            except:
+                subprocess.run(
+                    ['notify-send', '-t', '2000', 'Kopyalandı', f'{ip_type.upper()}: {ip}'],
+                    timeout=2, stderr=subprocess.DEVNULL
+                )
+            except (OSError, subprocess.TimeoutExpired):
                 pass
+        except Exception as exc:
+            print(f"✗ IP kopyalanamadı: {exc}")
     
     def load_config(self):
         try:
